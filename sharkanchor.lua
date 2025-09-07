@@ -1,27 +1,8 @@
 if not game.Players.LocalPlayer.Team then game.ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam", getgenv().Team or "Pirates") end
 wait(1)
 
-repeat
-    task.wait(1)
-    local chooseTeam = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("ChooseTeam", true)
-    local uiController = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("UIController", true)
+repeat task.wait(1) until game:GetService("Players").LocalPlayer.Team
 
-    if chooseTeam and chooseTeam.Visible and uiController then
-        for _, v in pairs(getgc(true)) do
-            if type(v) == "function" and getfenv(v).script == uiController then
-                local constant = getconstants(v)
-                pcall(function()
-                    if (constant[1] == "Pirates" or constant[1] == "Marines") and #constant == 1 then
-                        if constant[1] == getgenv().Team then
-                            v(getgenv().Team)
-                        end
-                    end
-                end)
-            end
-        end
-    end
-until game:GetService("Players").LocalPlayer.Team
-  
 --// check Sea
 if game.PlaceId == 2753915549 then
         World1 = true
@@ -1003,45 +984,47 @@ spawn(function()
 	end
 end)
 
-local function Kill_Sea_Monster(name, isBoat, offset, special)
+local function Kill_Sea_Monster(name,isBoat,offset,special)
     spawn(function()
         while task.wait(0.1) do
-            if getgenv().MK == "Kill " .. name and getgenv().Config["Shark Anchor"]["Enabled"] and not I_V4 and I_V5 and MS_V1 and MS_V1 >= 125 then
-                for _, v in pairs(workspace.Enemies:GetChildren()) do
-                    local part = v:FindFirstChild(isBoat and "VehicleSeat" or "HumanoidRootPart")
-                    local valid = isBoat and v:FindFirstChild("Health") and v.Health.Value > 0 or v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0
-                    if v.Name == name and part and valid then
-                        local lp = game.Players.LocalPlayer
-                        local char = lp.Character
-                        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                        local hum = char and char:FindFirstChild("Humanoid")
+            if getgenv().MK=="Kill "..name and getgenv().Config["Shark Anchor"]["Enabled"] and not I_V4 and I_V5 and MS_V1 and MS_V1>=125 then
+                for _,v in pairs(workspace.Enemies:GetChildren()) do
+                    local part=v:FindFirstChild(isBoat and "VehicleSeat" or "HumanoidRootPart")
+                    local valid=isBoat and v:FindFirstChild("Health") and v.Health.Value>0 or v:FindFirstChild("Humanoid") and v.Humanoid.Health>0
+                    if v.Name==name and part and valid then
+                        local lp=game.Players.LocalPlayer
+                        local char=lp.Character
+                        local hrp=char and char:FindFirstChild("HumanoidRootPart")
+                        local hum=char and char:FindFirstChild("Humanoid")
                         if not hrp or not hum then break end
-                        local dist = (part.Position - hrp.Position).Magnitude
-                        if dist <= 800 then
+                        local dist=(part.Position-hrp.Position).Magnitude
+                        if dist<=800 then
                             repeat task.wait(0.1)
                                 pcall(function()
+                                    local char=lp.Character
+                                    local hrp=char and char:FindFirstChild("HumanoidRootPart")
+                                    local hum=char and char:FindFirstChild("Humanoid")
+                                    if not hrp or not hum then return end
                                     AutoHaki()
-                                    if not isBoat then
-                                    EquipWeaponMelee()
-                                    end
-                                    if hum.Health / hum.MaxHealth < 0.5 and name ~= "Piranha" then
-                                        local safePos = hrp.Position + (hrp.Position - part.Position).Unit * 150
+                                    if not isBoat then EquipWeaponMelee() end
+                                    if hum.Health/hum.MaxHealth<0.5 and name~="Piranha" then
+                                        local safePos=hrp.Position+(hrp.Position-part.Position).Unit*150
                                         TP1(CFrame.new(safePos))
                                     else
                                         if special then
                                             special(v)
                                         else
-                                            TP1(part.CFrame * offset)
+                                            TP1(part.CFrame*offset)
                                         end
                                         if isBoat then
-                                            getgenv().Aimbot = true
-                                            aimpos = part.CFrame
+                                            getgenv().Aimbot=true
+                                            aimpos=part.CFrame
                                             AutoSkill()
                                         end
                                     end
                                 end)
-                            until not v or not v.Parent or (isBoat and v.Health.Value <= 0) or (not isBoat and v.Humanoid.Health <= 0) or getgenv().MK ~= "Kill " .. name or not getgenv().Config["Shark Anchor"]["Enabled"]
-                            if isBoat then getgenv().Aimbot = false end
+                            until not v or not v.Parent or (isBoat and v.Health.Value<=0) or (not isBoat and v.Humanoid.Health<=0) or getgenv().MK~="Kill "..name or not getgenv().Config["Shark Anchor"]["Enabled"]
+                            if isBoat then getgenv().Aimbot=false end
                         end
                     end
                 end
@@ -1050,17 +1033,17 @@ local function Kill_Sea_Monster(name, isBoat, offset, special)
     end)
 end
 
-Kill_Sea_Monster("Piranha", false, CFrame.new(0, 35, 0))
-Kill_Sea_Monster("Shark", false, CFrame.new(0, 35, 0))
-Kill_Sea_Monster("Fish Crew Member", false, CFrame.new(0, 35, 0))
-Kill_Sea_Monster("Terrorshark", false, nil, function(v)
+Kill_Sea_Monster("Piranha",false,CFrame.new(0,35,0))
+Kill_Sea_Monster("Shark",false,CFrame.new(0,35,0))
+Kill_Sea_Monster("Fish Crew Member",false,CFrame.new(0,35,0))
+Kill_Sea_Monster("Terrorshark",false,nil,function(v)
     if workspace["_WorldOrigin"]:FindFirstChild("SpinSlash") or workspace["_WorldOrigin"]:FindFirstChild("SharkSplash") then
-        TP1(v.HumanoidRootPart.CFrame * CFrame.new(0, 250, 0))
+        TP1(v.HumanoidRootPart.CFrame*CFrame.new(0,250,0))
     else
-        TP1(v.HumanoidRootPart.CFrame * CFrame.new(10, 40, 5))
+        TP1(v.HumanoidRootPart.CFrame*CFrame.new(10,40,5))
     end
 end)
-Kill_Sea_Monster("FishBoat", true, CFrame.new(0, 10, 0))
+Kill_Sea_Monster("FishBoat",true,CFrame.new(0,10,0))
 warn("loaded")
 end
 
@@ -1136,6 +1119,8 @@ function FastAttack:Attack()
     if not character or not character:FindFirstChild("HumanoidRootPart") then return end
     local weapon = character:FindFirstChildOfClass("Tool")
     if not weapon then return end
+    local tip = weapon.ToolTip
+    if tip ~= "Melee" and tip ~= "Sword" then return end
     local currentTime = tick()
     if currentTime - self.Debounce < 0.1 then return end
     self.Debounce = currentTime
