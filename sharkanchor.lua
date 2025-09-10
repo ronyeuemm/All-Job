@@ -702,8 +702,10 @@ function Teleport_Boat(CF_V1)
 end
 
 local function IsPlayerNearby(position, radius)
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+    local players = game:GetService("Players")
+    local localPlayer = players.LocalPlayer
+    for _, player in pairs(players:GetPlayers()) do
+        if player ~= localPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             if (player.Character.HumanoidRootPart.Position - position).Magnitude <= radius then
                 return true
             end
@@ -793,7 +795,7 @@ spawn(function()
 										boat.VehicleSeat.CFrame = CFrame.new(boat.VehicleSeat.Position.X, 300, boat.VehicleSeat.Position.Z)
 										Teleport_Boat(D_V1)
 									else
-										if IsPlayerNearby(D_V1.Position, 300) then
+										if IsPlayerNearby(boat.VehicleSeat.Position, 300) then
 											Hopl()
 										end
 										for _, B_V2 in pairs(game.Workspace.Boats:GetChildren()) do
@@ -841,38 +843,40 @@ end)
 --// Attack Sea Monster
 
 spawn(function()
-        local gg = getrawmetatable(game)
-        local old = gg.__namecall
-        setreadonly(gg, false)
-        gg.__namecall = newcclosure(function(...)
-            local method = getnamecallmethod()
-            local args = {...}
-            if tostring(method) == "FireServer" then
-                if tostring(args[1]) == "RemoteEvent" then
-                    if tostring(args[2]) ~= "true" and tostring(args[2]) ~= "false" then
-                        if getgenv().Aimbot then
-                            if type(args[2]) == "vector" then
-                                args[2] = aimpos
-                            else
-                                args[2] = CFrame.new(aimpos)
-                            end
-                            return old(unpack(args))
+    local gg = getrawmetatable(game)
+    local old = gg.__namecall
+    setreadonly(gg, false)
+    gg.__namecall = newcclosure(function(...)
+        local method = getnamecallmethod()
+        local args = {...}
+        if tostring(method) == "FireServer" then
+            if tostring(args[1]) == "RemoteEvent" then
+                if tostring(args[2]) ~= "true" and tostring(args[2]) ~= "false" then
+                    if getgenv().Aimbot and aimpos then
+                        if typeof(args[2]) == "Vector3" then
+                            args[2] = aimpos
+                        elseif typeof(args[2]) == "CFrame" then
+                            args[2] = CFrame.new(aimpos)
                         end
+                        return old(unpack(args))
                     end
                 end
             end
-            return old(...)
-        end)
+        end
+        return old(...)
     end)
-    
+end)
+
 function SendKey(Key)
-    game:GetService("VirtualInputManager"):SendKeyEvent(true, Key, false, game)
-    game:GetService("VirtualInputManager"):SendKeyEvent(false, Key, false, game)
+    local vim = game:GetService("VirtualInputManager")
+    vim:SendKeyEvent(true, Key, false, game)
+    vim:SendKeyEvent(false, Key, false, game)
 end
 
 function AutoSkill()
-    local weaponList = getgenv().Config["Shark Anchor"] and getgenv().Config["Shark Anchor"]["Select Weapon"]
-    local skillList = getgenv().Config["Shark Anchor"] and getgenv().Config["Shark Anchor"]["Select Skills"]
+    local cfg = getgenv().Config["Shark Anchor"]
+    if not cfg then return end
+    local weaponList, skillList = cfg["Select Weapon"], cfg["Select Skills"]
     if not weaponList or not skillList then return end
 
     local char = game.Players.LocalPlayer.Character
@@ -883,47 +887,43 @@ function AutoSkill()
 
         if weapon == "Melee" then
             EquipWeaponMelee()
-            task.wait()
             tool = char:FindFirstChildOfClass("Tool")
             if tool and tool.ToolTip == "Melee" then
                 for _, skill in ipairs(skillList) do
                     if skill == "Z" or skill == "X" or skill == "C" then
                         SendKey(skill)
+                        task.wait(0.05)
                     end
                 end
             end
-            task.wait(1)
 
         elseif weapon == "Sword" then
             EquipWeaponSword()
-            task.wait()
             tool = char:FindFirstChildOfClass("Tool")
             if tool and tool.ToolTip == "Sword" then
                 for _, skill in ipairs(skillList) do
                     if skill == "Z" or skill == "X" then
                         SendKey(skill)
+                        task.wait(0.05)
                     end
                 end
             end
-            task.wait(1)
 
         elseif weapon == "Gun" then
             EquipWeaponGun()
-            task.wait()
             tool = char:FindFirstChildOfClass("Tool")
             if tool and tool.ToolTip == "Gun" then
                 for _, skill in ipairs(skillList) do
                     if skill == "Z" or skill == "X" then
                         SendKey(skill)
+                        task.wait(0.05)
                     end
                 end
             end
-            task.wait(1)
 
         elseif weapon == "Blox Fruit" then
             local fruitName = game.Players.LocalPlayer.Data and game.Players.LocalPlayer.Data.DevilFruit.Value
             EquipWeaponFruit()
-            task.wait()
             local fruit = char:FindFirstChild(fruitName)
             if fruit and fruit:FindFirstChild("Level") then
                 local level = fruit.Level.Value
@@ -931,10 +931,10 @@ function AutoSkill()
                     local required = skill == "Z" and 1 or skill == "X" and 2 or skill == "C" and 3 or skill == "V" and 4 or skill == "F" and 5 or math.huge
                     if level >= required then
                         SendKey(skill)
+                        task.wait(0.05)
                     end
                 end
             end
-            task.wait(1)
         end
     end
 end
@@ -954,58 +954,65 @@ end)
 getgenv().MK = ""
 local lon = {FishBoat = true}
 local cac = {
-	Piranha = true,
-	Terrorshark = true,
-	Shark = true,
-	["Fish Crew Member"] = true,
+    Piranha = true,
+    Terrorshark = true,
+    Shark = true,
+    ["Fish Crew Member"] = true,
 }
 
 spawn(function()
-	while task.wait(0.1) do
-		if getgenv().Config["Shark Anchor"]["Enabled"] and not checkInventory("Shark Anchor") and checkInventory("Saber") and checkmas("Sword", "Saber") and checkmas("Sword", "Saber") >= 125 then
-			pcall(function()
-				if not game.Players.LocalPlayer.Character or not game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
-				local SM_Found = false
-				for _, v in ipairs(workspace.Enemies:GetChildren()) do
-					local part = v:FindFirstChild("HumanoidRootPart") or v:FindFirstChild("VehicleSeat")
-					if part and (part.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 800 then
-						local n = v.Name
-						if lon[n] or cac[n] then
-							getgenv().MK = "Kill " .. n
-							SM_Found = true
-							break
-						end
-					end
-				end
-				if not SM_Found then getgenv().MK = "None" end
-			end)
-		else
-			task.wait(1)
-		end
-	end
+    while task.wait(0.05) do
+        if getgenv().Config["Shark Anchor"]["Enabled"] then
+            pcall(function()
+                local char = game.Players.LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+                local found, foundBoat
+                for _, v in ipairs(workspace.Enemies:GetChildren()) do
+                    local part = v:FindFirstChild("HumanoidRootPart") or v:FindFirstChild("VehicleSeat")
+                    if part and (part.Position - hrp.Position).Magnitude <= 800 then
+                        if cac[v.Name] then
+                            found = v.Name
+                            break
+                        elseif lon[v.Name] then
+                            foundBoat = v.Name
+                        end
+                    end
+                end
+                getgenv().MK = found and ("Kill " .. found) or foundBoat and ("Kill " .. foundBoat) or "None"
+            end)
+        else
+            task.wait(0.5)
+        end
+    end
 end)
 
 local function Kill_Sea_Monster(name, isBoat, offset, special)
     task.spawn(function()
-        while task.wait(0.1) do
-            if getgenv().MK == "Kill " .. name and getgenv().Config["Shark Anchor"]["Enabled"] and not checkInventory("Shark Anchor") and checkInventory("Saber") and checkmas("Sword", "Saber") and checkmas("Sword", "Saber") >= 125 then
+        while task.wait(0.05) do
+            if getgenv().MK == "Kill " .. name 
+            and getgenv().Config["Shark Anchor"]["Enabled"] 
+            and not checkInventory("Shark Anchor") 
+            and checkInventory("Saber") 
+            and checkmas("Sword","Saber") 
+            and checkmas("Sword","Saber") >= 125 then
+
                 for _, v in pairs(workspace.Enemies:GetChildren()) do
+                    if v.Name ~= name then continue end
                     local part = v:FindFirstChild(isBoat and "VehicleSeat" or "HumanoidRootPart")
                     local valid = isBoat and v:FindFirstChild("Health") and v.Health.Value > 0 or v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0
-                    if v.Name == name and part and valid then
+                    if part and valid then
                         local lp = game.Players.LocalPlayer
                         local char = lp.Character
                         local hrp = char and char:FindFirstChild("HumanoidRootPart")
                         local hum = char and char:FindFirstChild("Humanoid")
                         if not hrp or not hum then break end
-                        local dist = (part.Position - hrp.Position).Magnitude
-                        if dist <= 800 then
-                            repeat task.wait(0.1)
+                        if (part.Position - hrp.Position).Magnitude <= 800 then
+                            repeat task.wait(0.05)
+                                if getgenv().MK ~= "Kill " .. name then break end
                                 pcall(function()
                                     AutoHaki()
-                                    if not isBoat then
-                                    EquipWeaponMelee()
-                                    end
+                                    if not isBoat then EquipWeaponMelee() end
                                     if hum.Health / hum.MaxHealth < 0.5 and name ~= "Piranha" then
                                         local safePos = hrp.Position + (hrp.Position - part.Position).Unit * 150
                                         TP1(CFrame.new(safePos))
@@ -1022,7 +1029,11 @@ local function Kill_Sea_Monster(name, isBoat, offset, special)
                                         end
                                     end
                                 end)
-                            until not v or not v.Parent or (isBoat and v.Health.Value <= 0) or (not isBoat and v.Humanoid.Health <= 0) or getgenv().MK ~= "Kill " .. name or not getgenv().Config["Shark Anchor"]["Enabled"]
+                            until not v or not v.Parent 
+                            or (isBoat and v.Health.Value <= 0) 
+                            or (not isBoat and v.Humanoid.Health <= 0) 
+                            or getgenv().MK ~= "Kill " .. name 
+                            or not getgenv().Config["Shark Anchor"]["Enabled"]
                             if isBoat then getgenv().Aimbot = false end
                         end
                     end
