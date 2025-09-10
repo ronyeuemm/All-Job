@@ -1,8 +1,30 @@
-if not game.Players.LocalPlayer.Team then game.ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam", getgenv().Team or "Pirates") end
-wait(1)
+if getgenv().Team == "Marines" then
+    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("SetTeam", "Marines")
+elseif getgenv().Team == "Pirates" then
+    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("SetTeam", "Pirates")
+end
 
-repeat task.wait(1) until game:GetService("Players").LocalPlayer.Team
+repeat
+    task.wait(1)
+    local chooseTeam = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("ChooseTeam", true)
+    local uiController = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("UIController", true)
 
+    if chooseTeam and chooseTeam.Visible and uiController then
+        for _, v in pairs(getgc(true)) do
+            if type(v) == "function" and getfenv(v).script == uiController then
+                local constant = getconstants(v)
+                pcall(function()
+                    if (constant[1] == "Pirates" or constant[1] == "Marines") and #constant == 1 then
+                        if constant[1] == getgenv().Team then
+                            v(getgenv().Team)
+                        end
+                    end
+                end)
+            end
+        end
+    end
+until game:GetService("Players").LocalPlayer.Team
+  
 --// check Sea
 if game.PlaceId == 2753915549 then
         World1 = true
@@ -374,29 +396,6 @@ function checkmas(_type, name)
     return false
 end
 
-spawn(function()
-    while task.wait(1) do
-      if getgenv().Loaded then
-        I_V1 = checkInventory("Shark Tooth Necklace")
-        I_V2 = checkInventory("Terror Jaw")
-        I_V3 = checkInventory("Monster Magnet")
-        I_V4 = checkInventory("Shark Anchor")
-        I_V5 = checkInventory("Saber")
-
-        MS_V1 = checkmas("Sword", "Saber")
-        MS_V2 = checkmas("Sword", "Shark Anchor")
-
-        M_V1 = function(S) return GetCountMaterials("Mutant Tooth", S) == true end
-        M_V2 = function(S) return GetCountMaterials("Shark Tooth", S) == true end
-        M_V3 = function(S) return GetCountMaterials("Terror Eyes", S) == true end
-        M_V4 = function(S) return GetCountMaterials("Fool's Gold", S) == true end
-        M_V5 = function(S) return GetCountMaterials("Electric Wings", S) == true end
-        task.wait(0.1)
-        getgenv().Checked = true
-        end
-    end
-end)
-
 --// Get Sb & Farm Mas
 function FMS(sw)
     if not game.Players.LocalPlayer.Backpack:FindFirstChild(sw) and not game.Players.LocalPlayer.Character:FindFirstChild(sw) then
@@ -451,7 +450,7 @@ end
 
 spawn(function()
     while task.wait(0.1) do
-        if not I_V5 and getgenv().Checked then
+        if not checkInventory("Saber") then
             if not game.Players.LocalPlayer.Character or not game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then 
                 continue 
             end
@@ -547,7 +546,7 @@ end)
 
 spawn(function()
    while task.wait(0.1) do
-       if I_V5 and MS_V1 and MS_V1 < 125 and getgenv().Checked then
+       if checkInventory("Saber") and checkmas("Sword", "Saber") and checkmas("Sword", "Saber") < 125  then
          FMS("Saber")
        end
    end
@@ -555,7 +554,7 @@ end)
 
 spawn(function()
    while task.wait(0.1) do
-       if I_V4 and MS_V2 and MS_V2 < 350 and getgenv().Checked then
+       if checkInventory("Shark Anchor") and checkmas("Sword", "Shark Anchor") and checkmas("Sword", "Shark Anchor") < 350 then
          FMS("Shark Anchor")
        end
    end
@@ -563,28 +562,28 @@ end)
 --// Buy Shark Anchor
 spawn(function()
     while task.wait(1) do
-        if not I_V4 and I_V5 and MS_V1 and MS_V1 >= 125 and getgenv().Checked then
-            if not I_V1 and M_V1(1) and M_V2(5) then
+        if not checkInventory("Shark Anchor") and checkInventory("Saber") and checkmas("Sword", "Saber") and checkmas("Sword", "Saber") >= 125 then
+            if not checkInventory("Shark Tooth Necklace") and GetCountMaterials("Mutant Tooth", 1) and GetCountMaterials("Shark Tooth", 5) then
                 local args = {
-                    [1] = "CraftItem",
-                    [2] = "Craft",
-                    [3] = "ToothNecklace"
+                [1] = "Craft",
+                [2] = "ToothNecklace",
+                [3] = {}
                 }
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-            elseif I_V1 and not I_V2 and M_V3(1) and M_V1(2) and M_V4(10) and M_V2(5) then
+                game:GetService("ReplicatedStorage").Modules.Net:FindFirstChild("RF/Craft"):InvokeServer(unpack(args))
+            elseif checkInventory("Shark Tooth Necklace") and not checkInventory("Terror Jaw") and GetCountMaterials("Terror Eyes", 1) and GetCountMaterials("Mutant Tooth", 2) and GetCountMaterials("Fool's Gold", 10) and GetCountMaterials("Shark Tooth", 5) then
                 local args = {
-                    [1] = "CraftItem",
-                    [2] = "Craft",
-                    [3] = "TerrorJaw"
+                [1] = "Craft",
+                [2] = "TerrorJaw",
+                [3] = {}
                 }
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-            elseif I_V1 and I_V2 and not I_V3 and M_V3(2) and M_V5(8) and M_V4(20) and M_V2(10) then
+                game:GetService("ReplicatedStorage").Modules.Net:FindFirstChild("RF/Craft"):InvokeServer(unpack(args))
+            elseif checkInventory("Shark Tooth Necklace") and checkInventory("Terror Jaw") and not checkInventory("Monster Magnet") and GetCountMaterials("Terror Eyes", 2) and GetCountMaterials("Electric Wings", 8) and GetCountMaterials("Fool's Gold", 20) and GetCountMaterials("Shark Tooth", 10) then
                 local args = {
-                    [1] = "CraftItem",
-                    [2] = "Craft",
-                    [3] = "SharkAnchor"
+                [1] = "Craft",
+                [2] = "SharkAnchor",
+                [3] = {}
                 }
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
+                game:GetService("ReplicatedStorage").Modules.Net:FindFirstChild("RF/Craft"):InvokeServer(unpack(args))
             end
         end
     end
@@ -702,6 +701,17 @@ function Teleport_Boat(CF_V1)
     end
 end
 
+local function IsPlayerNearby(position, radius)
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            if (player.Character.HumanoidRootPart.Position - position).Magnitude <= radius then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 local S_V1 = nil
 local lastRoughSeaTime = 0
 local lastSeaBeastTime = 0
@@ -710,18 +720,15 @@ local flyingFromSeaBeast = false
 
 spawn(function()
 	while task.wait() do
-		if getgenv().Config["Shark Anchor"]["Enabled"] and not I_V4 and I_V5 and MS_V1 and MS_V1 >= 125 and getgenv().Checked then
+		if getgenv().Config["Shark Anchor"]["Enabled"] and not checkInventory("Shark Anchor") and checkInventory("Saber") and checkmas("Sword", "Saber") and checkmas("Sword", "Saber") >= 125 then
 			pcall(function()
 				if not game.Players.LocalPlayer.Character or not game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
-
 				if not World3 then
 					game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelZou")
 				end
-
 				local currentTime = tick()
 				local roughSeaDetected = R_V1() and R_V1() <= 800
 				local seaBeastDetected = E_V1({"PirateBrigade", "PirateGrandBrigade", "SeaBeast1"})
-
 				if roughSeaDetected and not flyingFromRoughSea then
 					lastRoughSeaTime = currentTime
 					flyingFromRoughSea = true
@@ -730,13 +737,11 @@ spawn(function()
 					lastSeaBeastTime = currentTime
 					flyingFromSeaBeast = true
 				end
-
 				if flyingFromRoughSea or flyingFromSeaBeast then
 					if getgenv().MK == "None" then
 						if getgenv().Config["Shark Anchor"]["Leave Rough Sea"] then
 							local shouldFlyFromRoughSea = flyingFromRoughSea and (currentTime - lastRoughSeaTime < 3)
 							local shouldFlyFromSeaBeast = flyingFromSeaBeast and (currentTime - lastSeaBeastTime < 3)
-
 							if shouldFlyFromRoughSea or shouldFlyFromSeaBeast then
 								if game.Players.LocalPlayer.Character.Humanoid.Sit then
 									game.Players.LocalPlayer.Character.Humanoid.Sit = false
@@ -757,7 +762,6 @@ spawn(function()
 				else
 					flyingFromRoughSea = false
 					flyingFromSeaBeast = false
-
 					if not E_V1({"Shark", "Terrorshark", "Piranha", "Fish Crew Member", "FishBoat"}) then
 						local boat = B_V1()
 						if not boat then
@@ -789,6 +793,9 @@ spawn(function()
 										boat.VehicleSeat.CFrame = CFrame.new(boat.VehicleSeat.Position.X, 300, boat.VehicleSeat.Position.Z)
 										Teleport_Boat(D_V1)
 									else
+										if IsPlayerNearby(D_V1.Position, 300) then
+											Hopl()
+										end
 										for _, B_V2 in pairs(game.Workspace.Boats:GetChildren()) do
 											if B_V2:FindFirstChild("VehicleSeat") and B_V2.Owner.Value == game.Players.LocalPlayer then
 												if (B_V2.VehicleSeat.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 10 then
@@ -808,7 +815,6 @@ spawn(function()
 							end
 						end
 					end
-
 					if not B_V1() and getgenv().Config["Shark Anchor"]["Reset if no boat found"] and S_V1 and not E_V1({"Shark", "Terrorshark", "Piranha", "Fish Crew Member", "FishBoat"}) then
 						game.Players.LocalPlayer.Character.Head:Destroy()
 						S_V1 = nil
@@ -821,7 +827,7 @@ end)
 
 spawn(function()
     while task.wait() do
-        if getgenv().Config["Shark Anchor"]["Enabled"] and E_V1({"Shark", "Terrorshark", "Piranha", "Fish Crew Member", "FishBoat"}) and not I_V4 and I_V5 and MS_V1 and MS_V1 >= 125 then
+        if getgenv().Config["Shark Anchor"]["Enabled"] and E_V1({"Shark", "Terrorshark", "Piranha", "Fish Crew Member", "FishBoat"}) and not checkInventory("Shark Anchor") and checkInventory("Saber") and checkmas("Sword", "Saber") and checkmas("Sword", "Saber") >= 125 then
             if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
                 if game.Players.LocalPlayer.Character.Humanoid.Sit then
                     game.Players.LocalPlayer.Character.Humanoid.Sit = false
@@ -859,11 +865,6 @@ spawn(function()
         end)
     end)
     
-function SendKey(Key)
-    game:GetService("VirtualInputManager"):SendKeyEvent(true, Key, false, game)
-    game:GetService("VirtualInputManager"):SendKeyEvent(false, Key, false, game)
-end
-
 function SendKey(Key)
     game:GetService("VirtualInputManager"):SendKeyEvent(true, Key, false, game)
     game:GetService("VirtualInputManager"):SendKeyEvent(false, Key, false, game)
@@ -941,9 +942,9 @@ end
 local r = game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySharkmanKarate")
 spawn(function()
     while task.wait(1) do
-        if not game.Players.LocalPlayer.Character:FindFirstChild("Saber") and not game.Players.LocalPlayer.Backpack:FindFirstChild("Saber") and I_V5 and not I_V4 then
+        if not game.Players.LocalPlayer.Character:FindFirstChild("Saber") and not game.Players.LocalPlayer.Backpack:FindFirstChild("Saber") and checkInventory("Saber") and not checkInventory("Shark Anchor") then
             game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("LoadItem", "Saber")
-        elseif not game.Players.LocalPlayer.Character:FindFirstChild("Sharkman Karate") and not game.Players.LocalPlayer.Backpack:FindFirstChild("Sharkman Karate") and (r == 1 or r == 2) and not I_V4 then
+        elseif not game.Players.LocalPlayer.Character:FindFirstChild("Sharkman Karate") and not game.Players.LocalPlayer.Backpack:FindFirstChild("Sharkman Karate") and (r == 1 or r == 2) and not checkInventory("Shark Anchor") then
             game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySharkmanKarate", true)
             game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySharkmanKarate")
         end
@@ -961,7 +962,7 @@ local cac = {
 
 spawn(function()
 	while task.wait(0.1) do
-		if getgenv().Config["Shark Anchor"]["Enabled"] and not I_V4 and I_V5 and MS_V1 and MS_V1 >= 125 and getgenv().Checked then
+		if getgenv().Config["Shark Anchor"]["Enabled"] and not checkInventory("Shark Anchor") and checkInventory("Saber") and checkmas("Sword", "Saber") and checkmas("Sword", "Saber") >= 125 then
 			pcall(function()
 				if not game.Players.LocalPlayer.Character or not game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
 				local SM_Found = false
@@ -984,47 +985,45 @@ spawn(function()
 	end
 end)
 
-local function Kill_Sea_Monster(name,isBoat,offset,special)
-    spawn(function()
+local function Kill_Sea_Monster(name, isBoat, offset, special)
+    task.spawn(function()
         while task.wait(0.1) do
-            if getgenv().MK=="Kill "..name and getgenv().Config["Shark Anchor"]["Enabled"] and not I_V4 and I_V5 and MS_V1 and MS_V1>=125 then
-                for _,v in pairs(workspace.Enemies:GetChildren()) do
-                    local part=v:FindFirstChild(isBoat and "VehicleSeat" or "HumanoidRootPart")
-                    local valid=isBoat and v:FindFirstChild("Health") and v.Health.Value>0 or v:FindFirstChild("Humanoid") and v.Humanoid.Health>0
-                    if v.Name==name and part and valid then
-                        local lp=game.Players.LocalPlayer
-                        local char=lp.Character
-                        local hrp=char and char:FindFirstChild("HumanoidRootPart")
-                        local hum=char and char:FindFirstChild("Humanoid")
+            if getgenv().MK == "Kill " .. name and getgenv().Config["Shark Anchor"]["Enabled"] and not checkInventory("Shark Anchor") and checkInventory("Saber") and checkmas("Sword", "Saber") and checkmas("Sword", "Saber") >= 125 then
+                for _, v in pairs(workspace.Enemies:GetChildren()) do
+                    local part = v:FindFirstChild(isBoat and "VehicleSeat" or "HumanoidRootPart")
+                    local valid = isBoat and v:FindFirstChild("Health") and v.Health.Value > 0 or v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0
+                    if v.Name == name and part and valid then
+                        local lp = game.Players.LocalPlayer
+                        local char = lp.Character
+                        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                        local hum = char and char:FindFirstChild("Humanoid")
                         if not hrp or not hum then break end
-                        local dist=(part.Position-hrp.Position).Magnitude
-                        if dist<=800 then
+                        local dist = (part.Position - hrp.Position).Magnitude
+                        if dist <= 800 then
                             repeat task.wait(0.1)
                                 pcall(function()
-                                    local char=lp.Character
-                                    local hrp=char and char:FindFirstChild("HumanoidRootPart")
-                                    local hum=char and char:FindFirstChild("Humanoid")
-                                    if not hrp or not hum then return end
                                     AutoHaki()
-                                    if not isBoat then EquipWeaponMelee() end
-                                    if hum.Health/hum.MaxHealth<0.5 and name~="Piranha" then
-                                        local safePos=hrp.Position+(hrp.Position-part.Position).Unit*150
+                                    if not isBoat then
+                                    EquipWeaponMelee()
+                                    end
+                                    if hum.Health / hum.MaxHealth < 0.5 and name ~= "Piranha" then
+                                        local safePos = hrp.Position + (hrp.Position - part.Position).Unit * 150
                                         TP1(CFrame.new(safePos))
                                     else
                                         if special then
                                             special(v)
                                         else
-                                            TP1(part.CFrame*offset)
+                                            TP1(part.CFrame * offset)
                                         end
                                         if isBoat then
-                                            getgenv().Aimbot=true
-                                            aimpos=part.CFrame
+                                            getgenv().Aimbot = true
+                                            aimpos = part.CFrame
                                             AutoSkill()
                                         end
                                     end
                                 end)
-                            until not v or not v.Parent or (isBoat and v.Health.Value<=0) or (not isBoat and v.Humanoid.Health<=0) or getgenv().MK~="Kill "..name or not getgenv().Config["Shark Anchor"]["Enabled"]
-                            if isBoat then getgenv().Aimbot=false end
+                            until not v or not v.Parent or (isBoat and v.Health.Value <= 0) or (not isBoat and v.Humanoid.Health <= 0) or getgenv().MK ~= "Kill " .. name or not getgenv().Config["Shark Anchor"]["Enabled"]
+                            if isBoat then getgenv().Aimbot = false end
                         end
                     end
                 end
@@ -1033,17 +1032,17 @@ local function Kill_Sea_Monster(name,isBoat,offset,special)
     end)
 end
 
-Kill_Sea_Monster("Piranha",false,CFrame.new(0,35,0))
-Kill_Sea_Monster("Shark",false,CFrame.new(0,35,0))
-Kill_Sea_Monster("Fish Crew Member",false,CFrame.new(0,35,0))
-Kill_Sea_Monster("Terrorshark",false,nil,function(v)
+Kill_Sea_Monster("Piranha", false, CFrame.new(0, 35, 0))
+Kill_Sea_Monster("Shark", false, CFrame.new(0, 35, 0))
+Kill_Sea_Monster("Fish Crew Member", false, CFrame.new(0, 35, 0))
+Kill_Sea_Monster("Terrorshark", false, nil, function(v)
     if workspace["_WorldOrigin"]:FindFirstChild("SpinSlash") or workspace["_WorldOrigin"]:FindFirstChild("SharkSplash") then
-        TP1(v.HumanoidRootPart.CFrame*CFrame.new(0,250,0))
+        TP1(v.HumanoidRootPart.CFrame * CFrame.new(0, 250, 0))
     else
-        TP1(v.HumanoidRootPart.CFrame*CFrame.new(10,40,5))
+        TP1(v.HumanoidRootPart.CFrame * CFrame.new(10, 40, 5))
     end
 end)
-Kill_Sea_Monster("FishBoat",true,CFrame.new(0,10,0))
+Kill_Sea_Monster("FishBoat", true, CFrame.new(0, 10, 0))
 warn("loaded")
 end
 
@@ -1119,8 +1118,6 @@ function FastAttack:Attack()
     if not character or not character:FindFirstChild("HumanoidRootPart") then return end
     local weapon = character:FindFirstChildOfClass("Tool")
     if not weapon then return end
-    local tip = weapon.ToolTip
-    if tip ~= "Melee" and tip ~= "Sword" then return end
     local currentTime = tick()
     if currentTime - self.Debounce < 0.1 then return end
     self.Debounce = currentTime
@@ -1221,17 +1218,6 @@ local function GetNetworkOwnership(part)
             part:SetNetworkOwner(LocalPlayer)
         end
     end)
-end
-
-local function IsPlayerNearby(position, radius)
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            if (player.Character.HumanoidRootPart.Position - position).Magnitude <= radius then
-                return true
-            end
-        end
-    end
-    return false
 end
 
 local function IsStuck(mob, id)
@@ -1390,6 +1376,6 @@ wait(50)
 game:GetService("VirtualUser"):Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 end) 
 
-task.delay(1,function()
+task.delay(2,function()
   getgenv().Loaded = true
 end)
